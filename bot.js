@@ -8,41 +8,53 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}!`);
 });
 
-const time = 10000;
+let time = [60000];
 
 client.on('message', message => {
     const channel = client.channels.cache.get('711698649847038066');
     if (message.content[0] === '!') {
 
-        let msg = message.content.substring(1);
-        if (msg === 'ping') {
+        let msg = message.content.substring(1).split(' ');
+        if (msg[0] === 'ping') {
           message.reply('Pong!');
-        } else if (msg === 'workout') {
+        } else if (msg[0] === 'workout') {
             channel.send('Workout started');
-        } else if (msg === 'start') {
+        } else if (msg[0] === 'start') {
+            if (msg.length > 1) {
+                if (msg[1] === 'list') {
+                    for (let i = 2; i < msg.length; i++) {
+                        if (!isNaN(msg[i])) {
+                            time[i - 2] = parseInt(msg[i]) * 1000;
+                        }
+                    }
+                } else if (!isNaN(msg[1])) {
+                    time[0] = parseInt(msg[1]) * 1000;
+                }
+            }
 
-            channel.send('Timer started for ' + time/1000 + ' seconds');
-            
-            // let sent;
-            // // Send message & Store reference to the message
-            // sent = message.channel.send(time/1000);
-            
-            recursiveTimer(channel, time, 1000);
+            for (let i = 0; i < time.length; i++) {
+                channel.send('Timer started for ' + time[i]/1000 + ' seconds'); 
+
+                setTimeout(() => {
+                    channel.send('<@&712363798631022615>, Time\'s up!');
+                }, time[i]);
+            }
         }
         console.log('\'' + msg + '\' entered and did not crash');
     }
 
 });
 
-function recursiveTimer(channel, time, interval) {
-    if (time <= 0) return;
+// UTC Hardcode
+// function recursiveTimer(channel, time, interval) {
+//     if (time <= 0) return;
 
-    setTimeout(() => {
-        // Edit msg 20 seconds later
-        channel.send(time);
-    }, interval);
+//     setTimeout(() => {
+//         // Edit msg 20 seconds later
+//         channel.send(time);
+//     }, interval);
 
-    recursiveTimer(channel, time-=interval, interval);
-}
+//     recursiveTimer(channel, time-=interval, interval);
+// }
 
 client.login(keys.token);
