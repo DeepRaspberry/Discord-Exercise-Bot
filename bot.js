@@ -10,6 +10,8 @@ client.on('ready', () => {
 
 let exercises = [];
 let breakTime = {name:'break',time:5000};
+let listening = false;
+let setTime = 60000;
 
 client.on('message', function(message) {
     const channel = client.channels.cache.get('711698649847038066');
@@ -48,25 +50,40 @@ client.on('message', function(message) {
                         time.push(breakTime.time);
                     }
                     time.pop();
+                } else if (msg[1] === 'default') {
+                    for (let i = 1; i < exercises.length; i++) {
+                        time.push(parseInt(setTime));
+                        time.push(breakTime.time);
+                    }
+                    console.log(time);
                 }
             }
-            // channel.send(getTime());
-            console.log(time);
             timerFunc(channel,time);
+        } else if (msg[0] === 'participants') {
+            listening = true;
+        } else if (msg[0] === 'add') {
+            
+        } else if (msg[0] === 'break') {
+            if (msg.length > 1) {
+                if (!isNaN(msg[1])) {
+                    breakTime.time = msg[1]*1000;
+                }
+            }
+        } else if (msg[0] === 'setTime') {
+            if (msg.length > 1) {
+                if (!isNaN(msg[1])) {
+                    setTime = msg[1]*1000;
+                }
+            }
         }
         console.log('\'' + msg + '\' entered and did not crash');
     }
 
 });
 
-var getTime = function() {
-    let date = new Date();
-    return date.getTime();
-}
-
 var timerFunc = function(channel,time) {
     let sum = 0;
-    for (let i = 0; i < time.length; i++) {
+    for (let i = 0; i < exercises.length; i++) {
         sum += time[i];
         setTimeout(() => {
 
@@ -75,16 +92,21 @@ var timerFunc = function(channel,time) {
             } else if (i !== 0) {
 
                 if (i % 2 === 0)
-                    channel.send('<@&712363798631022615>, next exercise is ' + exercises[i]);
+                    channel.send('<@&712363798631022615>, next exercise is ' + exercises[i] + ' for ' + time[i+1]/1000 + ' seconds!');
                 else 
-                    channel.send('<@&712363798631022615>, break time!');
+                    channel.send('<@&712363798631022615>, break time for ' + time[i+1]/1000 + ' seconds!');
 
             } else {
-                channel.send('<@&712363798631022615>, first exercise is ' + exercises[i]);
+                channel.send('<@&712363798631022615>, first exercise is ' + exercises[i] + ' for ' + time[i+1]/1000 + ' seconds!');
             }
 
         }, sum);
     }
+    removeParticipants(channel);
+}
+
+var removeParticipants = function(channel) {
+    listening = false;
 }
 
 // UTC Hardcode
